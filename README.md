@@ -6,11 +6,6 @@
 <h1>Network Security Groups (NSGs) and Inspecting Traffic Between Azure Virtual Machines</h1>
 In this tutorial, we observe various network traffic to and from Azure Virtual Machines with Wireshark as well as experiment with Network Security Groups. <br />
 
-
-<h2>Video Demonstration</h2>
-
-- ### [YouTube: Azure Virtual Machines, Wireshark, and Network Security Groups](https://www.youtube.com)
-
 <h2>Environments and Technologies Used</h2>
 
 - Microsoft Azure (Virtual Machines/Compute)
@@ -23,15 +18,6 @@ In this tutorial, we observe various network traffic to and from Azure Virtual M
 
 - Windows 10 (21H2)
 - Ubuntu Server 20.04
-
-<h2>High-Level Steps</h2>
-
-- Step 1
-- Step 2
-- Step 3
-- Step 4
-
-<h2>Actions and Observations</h2>
 
 <h2>Dealing with Account Lockouts</h2>
 
@@ -235,6 +221,138 @@ By following these steps, you can successfully configure an account lockout poli
 
 
 
+
+
+
+
+
+
+
+<h2>Dealing with Account Lockouts</h2>
+
+<p>
+In this lab, we will configure account lockout policies to prevent unlimited password guessing attempts.
+</p>
+
+<h3>Step 1: Attempt to Log in with Incorrect Credentials</h3>
+<ul>
+  <li>Get logged into <strong>DC-1</strong>.</li>
+  <li>Pick a random user account you created previously.</li>
+  <li>Attempt to log in with it <strong>6 times</strong> using a bad password.</li>
+  <li>Observe that the account has been locked out within Active Directory.</li>
+</ul>
+
+<h3>Step 2: Configure Group Policy to Lock Out Accounts After Failed Attempts</h3>
+<p>We will configure an account lockout policy using Group Policy.</p>
+<ul>
+  <li>Open the <strong>Group Policy Management Console (GPMC)</strong>.</li>
+  <li>Click Start and type <code>gpmc.msc</code>, then press Enter.</li>
+  <li>In the GPMC, navigate to <strong>Group Policy Objects</strong>.</li>
+  <li>Right-click Group Policy Objects and select <strong>New</strong> to create a new GPO, or right-click an existing GPO and select <strong>Edit</strong>.</li>
+  <li>Name the GPO something descriptive, like <strong>"Account Lockout Policy"</strong>.</li>
+</ul>
+
+<h3>Step 3: Set Account Lockout Policy Settings</h3>
+<ul>
+  <li>Navigate to: <br>
+    <code>Computer Configuration > Policies > Windows Settings > Security Settings > Account Policies > Account Lockout Policy</code>
+  </li>
+  <li>Configure the following settings:
+    <ul>
+      <li><strong>Account Lockout Duration:</strong> Set to 30 minutes.</li>
+      <li><strong>Account Lockout Threshold:</strong> Set to 5 invalid attempts.</li>
+      <li><strong>Reset Account Lockout Counter After:</strong> Set to 15 minutes.</li>
+    </ul>
+  </li>
+  <li>Click <strong>Apply</strong> and <strong>OK</strong>.</li>
+</ul>
+
+<h3>Step 4: Link the GPO to an Organizational Unit (OU)</h3>
+<ul>
+  <li>In the GPMC, right-click the OU or domain where you want to apply the GPO.</li>
+  <li>Select <strong>Link an Existing GPO</strong>.</li>
+  <li>Choose the <strong>Account Lockout Policy</strong> GPO and click OK.</li>
+</ul>
+
+<h3>Step 5: Apply Group Policy Updates</h3>
+<ul>
+  <li>To force an immediate update, open Command Prompt and type:
+    <pre>gpupdate /force</pre>
+  </li>
+  <li>Press Enter.</li>
+</ul>
+
+<h3>Step 6: Verify the Policy</h3>
+<ul>
+  <li>On a client machine, open Run and type <code>rsop.msc</code> to view applied policies.</li>
+  <li>Alternatively, check the settings in the <strong>Group Policy Management Console</strong>.</li>
+</ul>
+
+<h3>Step 7: Unlock the Locked Account</h3>
+<ul>
+  <li>Open <strong>Active Directory Users and Computers (ADUC)</strong>.</li>
+  <li>Find the locked account.</li>
+  <li>Right-click the account and select <strong>Properties</strong>.</li>
+  <li>Go to the <strong>Account</strong> tab and check <strong>Unlock Account</strong>.</li>
+  <li>Click <strong>Apply</strong> and <strong>OK</strong>.</li>
+</ul>
+
+<h3>Step 8: Reset the Password</h3>
+<ul>
+  <li>Right-click the user account in ADUC.</li>
+  <li>Select <strong>Reset Password</strong>.</li>
+  <li>Enter a new password and confirm it.</li>
+  <li>Ensure the <strong>User must change password at next logon</strong> box is checked if required.</li>
+  <li>Click <strong>OK</strong>.</li>
+</ul>
+
+<h3>Step 9: Test the New Configuration</h3>
+<ul>
+  <li>Attempt to log in with the reset password.</li>
+  <li>Verify that the account is accessible again.</li>
+</ul>
+
+<h3>Final Thoughts</h3>
+<p>By configuring an account lockout policy, you enhance security and prevent unauthorized access attempts. Make sure to balance security with usability to avoid unnecessary lockouts for legitimate users.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3>Enabling and Disabling Accounts</h3>
+
+<ul>
+  <li>Search up and find the same account in active directory</li>
+  <li>Right click the account and disable it. If you search it again it contains a down arrow next to the icon.</li>
+  <li>Try to re-log with the disabled account. It should refuse entry.</li>
+  <li>Try enabling the account, and once more try logging in. This time it should work.</li>
+</ul>
+
+<h3>Observing Logs</h3>
+
+<ul>
+<li>Go to the taskbar and search eventvwr.msc, which will let you see authentication logs/</li>
+<li>Expand "windows logs" and then select security. </li>
+<li>Right click it and choose "find". We will see the logs of the user we just logged in with.</li>
+<li>Click "Find Next" until you find the failures that occured when we tried to log in and failed.</li>
+<li>You should eventually see Audit Failures, click on that.</li>
+
+![image](https://github.com/user-attachments/assets/48a1701a-6e0e-4293-b679-5a594bc431f9)
+
+  
+<li>These are the failures we can observe when we tried to log in with a incorrect password.</li>
+
+<p>This is the end of the lab with Active Directory. Although this scratches the surface, there are many things you can do with Active Directory. </p>
+  
+</ul>
 
 
 
